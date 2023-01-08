@@ -1,0 +1,85 @@
+# Marta Xiulan Aribó Herrera
+# Autmun 2022/2023
+# TFG
+# Program to normalize (pre-edge and post-edge) spectra
+
+#---------------------------------------------------------------------------
+#                               LIBRARIES & FUNCTIONS
+#---------------------------------------------------------------------------
+
+
+import csv
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.rcParams.update({
+        "text.usetex": True,
+        "font.family": "Serif",
+        "font.size":10
+    })
+
+def Graph(x,y,GraphTitle,GraphFileTitle):
+    
+    plt.figure(figsize=(15,10))
+
+    plt.plot(x,y, linewidth=1)
+    
+    y_1 = np.linspace(1,1,205)
+    plt.plot(x,y_1, linewidth=0.5, color = "red")
+
+    plt.title(GraphTitle)
+    plt.xlabel('Energy(eV)')
+    plt.ylabel("Intensity")
+     
+    plt.savefig(GraphFileTitle +".jpg",dpi=300)
+    #plt.show()
+    plt.close()
+
+def heaviside_normalization(CSV_file,Energy,IntensidadNormalizadaSample):
+    with open (CSV_file, newline = '') as file:
+        reader = csv.reader(file, delimiter = ' ')
+        intensity = list()
+
+        file.seek(0)
+        next(reader, None)
+        for fila in reader:
+            Energy.append(float(fila[0]))
+            intensity.append(float(fila[1]))
+
+    for i in range (0, len(intensity)):
+
+        IntensidadNormalizadaSample.append((intensity[i]-min(intensity))/(intensity[len(intensity)-1]-min(intensity)))
+       
+def WritingFiles(NormalizedSignalSample,Energy,CSVTitle):
+    with open (CSVTitle, 'w', newline = '') as csvfile:
+            write_csv = csv.writer(csvfile, delimiter = ' ')
+            write_csv.writerow(['Energy',"Normalized Heaviside Intensity"])
+            for j in range(0,len(NormalizedSignalSample)):
+                write_csv.writerow([Energy[j],NormalizedSignalSample[j]])
+
+#---------------------------------------------------------------------------
+#                         Body
+#---------------------------------------------------------------------------
+
+size= "L" 
+particle = 0
+number_of_particles = 8
+
+for i in range(0,number_of_particles):
+    particle = particle + 1
+
+    CSV_file = "./spectra_particles_L/mean_spectrum_particle_{}{}_LH_LV.csv".format(size,particle)
+    heaviside_normalized_intensity_sample = list()     
+    energy = list()
+
+    heaviside_normalization(CSV_file,energy,heaviside_normalized_intensity_sample)
+
+
+    CSVTitle = "normalized_heaviside_spectrum_particle_{}{}.csv".format(size,particle)
+    WritingFiles(heaviside_normalized_intensity_sample,energy,CSVTitle)
+    
+    GraphTitle = "Heaviside normalization spectrum of the particle {}{} ".format(size,particle)
+    GraphFileTitle = "normalized_heaviside_spectrum_particle_{}{}".format(size,particle)
+    Graph(energy,heaviside_normalized_intensity_sample,GraphTitle,GraphFileTitle)
+
+
